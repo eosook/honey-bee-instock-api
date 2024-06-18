@@ -1,7 +1,7 @@
 import "dotenv/config";
 
 export default {
-  client: "mysql12",
+  client: "mysql2",
   connection: {
     host: process.env.DB_LOCAL_HOST,
     database: process.env.DB_LOCAL_NAME,
