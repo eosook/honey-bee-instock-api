@@ -3,11 +3,8 @@ import 'dotenv/config'
 import cors from 'cors'
 import warehouse from './routes/warehouse.js'
 import inventories from './routes/inventories.js'
-
 const app = express()
 const PORT = process.env.PORT || 8080
-
-
 app.use(cors())
 app.use(express.json())
 app.use('/', warehouse)
