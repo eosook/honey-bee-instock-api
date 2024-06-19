@@ -7,8 +7,9 @@ import inventories from './routes/inventories.js'
 const app = express()
 const PORT = process.env.PORT || 8080
 
-app.use(cors());
-app.use(express.json());
+
+app.use(cors())
+app.use(express.json())
 app.use('/', warehouse)
 app.use('/warehouse', warehouse)
 app.use('/inventories', inventories)
