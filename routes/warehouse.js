@@ -43,7 +43,7 @@ router.route('/:id/inventories')
     const id = req.params.id
     try {
         const inventory = await knex.select('*').from('inventories').where('warehouse_id', id)
-        res.status(201).json(inventory).send('Got Warehouse Inventory!');
+        res.json(inventory)
     } catch {
         return res.status(500).send('Error getting Warehouse inventory')
     }
