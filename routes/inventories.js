@@ -67,6 +67,5 @@ router.route('/inventories/:id').get(async (req, res) => {
     res.status(200).json(findInventories)
   } catch (error) {
     res.status(400).send(`error fetching inventory`)
-  }
-})
+
 export default router
