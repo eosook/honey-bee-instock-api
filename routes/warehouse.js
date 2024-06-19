@@ -1,6 +1,9 @@
 import express from 'express'
-import knex from 'knex';
+import initKnex from 'knex';
+import configuration from '../knexfile.js'
 const router = express.Router();
+
+const knex = initKnex(configuration);
 
 router
     .route('/')
@@ -18,7 +21,7 @@ router
     .get( async (req, res) => {
         try {
             const id = req.params.id
-            const warehouse = await knex.select(id).from('warehouses')
+            const warehouse = await knex.select('*').from('warehouses').where('id', id)
             res.json(warehouse)
         } catch {
             return res.status(500).send('Error getting Warehouse')
