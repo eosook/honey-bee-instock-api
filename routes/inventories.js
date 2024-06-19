@@ -3,7 +3,24 @@ import initKnex from 'knex'
 import configuration from '../knexfile.js'
 const router = express.Router()
 const knex = initKnex(configuration)
+//check to see if all fields are filled
+const validateFields = (req, res, next) => {
+  const { warehouse_id, item_name, description, category, status, quantity } =
+    req.body
+  if (
+    !warehouse_id ||
+    !item_name ||
+    !description ||
+    !category ||
+    !status ||
+    quantity === undefined
+  ) {
+    return res.status(400).json({ message: 'All fields are required.' })
+  }
+  next()
+}
 router
+  //get all item
   .route('/inventories')
   .get(async (_req, res) => {
     try {
@@ -13,7 +30,8 @@ router
       return res.status(500).send('Error getting inventories')
     }
   })
-  .post(async (req, res) => {
+  //create new item and check
+  .post(validateFields, async (req, res) => {
     try {
       const {
         warehouse_id,
@@ -36,10 +54,10 @@ router
         .status(201)
         .json({ message: 'Item added successfully ', item: newItem })
     } catch (error) {
-      console.error(error)
       res.status(500).json({ message: 'Error creating item' })
     }
   })
+//get single item
 router.route('/inventories/:id').get(async (req, res) => {
   try {
     const data = await knex('inventories')
