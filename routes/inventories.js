@@ -3,15 +3,43 @@ import initKnex from 'knex'
 import configuration from '../knexfile.js'
 const router = express.Router()
 const knex = initKnex(configuration)
-
-router.route('/inventories').get(async (_req, res) => {
-  try {
-    const listInventories = await knex('inventories')
-    res.json(listInventories)
-  } catch {
-    return res.status(500).send('Error getting inventories')
-  }
-})
+router
+  .route('/inventories')
+  .get(async (_req, res) => {
+    try {
+      const listInventories = await knex('inventories')
+      res.json(listInventories)
+    } catch {
+      return res.status(500).send('Error getting inventories')
+    }
+  })
+  .post(async (req, res) => {
+    try {
+      const {
+        warehouse_id,
+        item_name,
+        description,
+        category,
+        status,
+        quantity,
+      } = req.body
+      const newItem = {
+        warehouse_id,
+        item_name,
+        description,
+        category,
+        status,
+        quantity: parseInt(quantity),
+      }
+      await knex('inventories').insert(newItem)
+      res
+        .status(201)
+        .json({ message: 'Item added successfully ', item: newItem })
+    } catch (error) {
+      console.error(error)
+      res.status(500).json({ message: 'Error creating item' })
+    }
+  })
 router.route('/inventories/:id').get(async (req, res) => {
   try {
     const data = await knex('inventories')
