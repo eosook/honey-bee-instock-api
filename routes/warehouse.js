@@ -1,7 +1,7 @@
 import express from "express";
 import initKnex from "knex";
 import configuration from "../knexfile.js";
-import { body, validationResult, matchedData } from "express-validator";
+import { validationResult, checkSchema } from "express-validator";
 const router = express.Router();
 
 const knex = initKnex(configuration);
@@ -17,47 +17,82 @@ router
     }
   })
   .post(
-    body().notEmpty(),
-    body("contact_phone").matches(
-      /^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/
+    checkSchema(
+      {
+        warehouse_name: {
+          trim: true,
+          notEmpty: { bail: true },
+          errorMessage: "This is a required field",
+        },
+        address: {
+          trim: true,
+          notEmpty: { bail: true },
+          errorMessage: "This is a required field",
+        },
+        city: {
+          trim: true,
+          notEmpty: { bail: true },
+          errorMessage: "This is a required field",
+        },
+        country: {
+          trim: true,
+          notEmpty: { bail: true },
+          errorMessage: "This is a required field",
+        },
+        contact_name: {
+          trim: true,
+          notEmpty: { bail: true },
+          errorMessage: "This is a required field",
+        },
+        contact_position: {
+          trim: true,
+          notEmpty: { bail: true },
+          errorMessage: "This is a required field",
+        },
+        contact_phone: {
+          trim: true,
+          matches: {
+            options: /^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/,
+          },
+        },
+        contact_email: { trim: true, isEmail: { bail: true } },
+      },
+      ["body"]
     ),
-    body("contact_email").isEmail(),
     async (req, res) => {
-      const validData = validationResult(req);
-      if (validData.isEmpty()) {
-        try {
-          const {
-            warehouse_name,
-            address,
-            city,
-            country,
-            contact_name,
-            contact_position,
-            contact_phone,
-            contact_email,
-          } = req.body;
-          const newWarehouse = {
-            warehouse_name,
-            address,
-            city,
-            country,
-            contact_name,
-            contact_position,
-            contact_phone,
-            contact_email,
-          };
-          await knex("warehouses").insert(newWarehouse);
-          res.status(201).json({
-            message: "Warehouse added successfully",
-            warehouse: newWarehouse,
-          });
-          // console.log(validData);
-          // next();
-        } catch (error) {
-          return res.status(400).send("Error adding warehouse");
-        }
+      const result = validationResult(req);
+      if (!result.isEmpty()) {
+        return res.status(400).json({ errors: result.array() });
       }
-      return res.status(400).send({ errors: validData.array() });
+      try {
+        const {
+          warehouse_name,
+          address,
+          city,
+          country,
+          contact_name,
+          contact_position,
+          contact_phone,
+          contact_email,
+        } = req.body;
+        const newWarehouse = {
+          warehouse_name,
+          address,
+          city,
+          country,
+          contact_name,
+          contact_position,
+          contact_phone,
+          contact_email,
+        };
+        await knex("warehouses").insert(newWarehouse);
+        return res.status(201).json({
+          message: "Warehouse added successfully ",
+          warehouse: newWarehouse,
+        });
+      } catch (error) {
+        return res.status(400).send("Error adding warehouse");
+      }
     }
   );
 
