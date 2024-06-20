@@ -4,6 +4,33 @@ import configuration from "../knexfile.js";
 const router = express.Router();
 
 const knex = initKnex(configuration);
+const isWarehouseValid = async (req, res, next) => {
+  const {
+    warehouse_name,
+    address,
+    city,
+    country,
+    contact_name,
+    contact_position,
+    contact_phone,
+    contact_email,
+  } = req.body;
+  // if ((req.body.contact_phone) )
+  if (
+    !warehouse_name ||
+    !address ||
+    !city ||
+    !country ||
+    !contact_name ||
+    !contact_position ||
+    !contact_phone ||
+    !contact_email
+  ) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+  //   console.log(contact_phone);
+  //   if (!contact_phone)
+};
 
 router
   .route("/")
@@ -15,7 +42,7 @@ router
       return res.status(500).send("Error getting Warehouses");
     }
   })
-  .post(async (req, res) => {
+  .post(isWarehouseValid, async (req, res) => {
     try {
       const {
         warehouse_name,
@@ -38,14 +65,12 @@ router
         contact_email,
       };
       await knex("warehouses").insert(newWarehouse);
-      res
-        .status(201)
-        .json({
-          message: "Warehouse added successfully",
-          warehouse: newWarehouse,
-        });
+      res.status(201).json({
+        message: "Warehouse added successfully",
+        warehouse: newWarehouse,
+      });
     } catch (error) {
-      return res.status(500).send("Error adding warehouse");
+      return res.status(400).send("Error adding warehouse");
     }
   });
 
