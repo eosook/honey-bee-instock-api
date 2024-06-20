@@ -1,36 +1,10 @@
 import express from "express";
 import initKnex from "knex";
 import configuration from "../knexfile.js";
+import { body, validationResult, matchedData } from "express-validator";
 const router = express.Router();
 
 const knex = initKnex(configuration);
-const isWarehouseValid = async (req, res, next) => {
-  const {
-    warehouse_name,
-    address,
-    city,
-    country,
-    contact_name,
-    contact_position,
-    contact_phone,
-    contact_email,
-  } = req.body;
-  // if ((req.body.contact_phone) )
-  if (
-    !warehouse_name ||
-    !address ||
-    !city ||
-    !country ||
-    !contact_name ||
-    !contact_position ||
-    !contact_phone ||
-    !contact_email
-  ) {
-    return res.status(400).json({ message: "All fields are required" });
-  }
-  //   console.log(contact_phone);
-  //   if (!contact_phone)
-};
 
 router
   .route("/")
@@ -42,37 +16,50 @@ router
       return res.status(500).send("Error getting Warehouses");
     }
   })
-  .post(isWarehouseValid, async (req, res) => {
-    try {
-      const {
-        warehouse_name,
-        address,
-        city,
-        country,
-        contact_name,
-        contact_position,
-        contact_phone,
-        contact_email,
-      } = req.body;
-      const newWarehouse = {
-        warehouse_name,
-        address,
-        city,
-        country,
-        contact_name,
-        contact_position,
-        contact_phone,
-        contact_email,
-      };
-      await knex("warehouses").insert(newWarehouse);
-      res.status(201).json({
-        message: "Warehouse added successfully",
-        warehouse: newWarehouse,
-      });
-    } catch (error) {
-      return res.status(400).send("Error adding warehouse");
+  .post(
+    body().notEmpty(),
+    body("contact_phone").matches(
+      /^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/
+    ),
+    body("contact_email").isEmail(),
+    async (req, res) => {
+      const validData = validationResult(req);
+      if (validData.isEmpty()) {
+        try {
+          const {
+            warehouse_name,
+            address,
+            city,
+            country,
+            contact_name,
+            contact_position,
+            contact_phone,
+            contact_email,
+          } = req.body;
+          const newWarehouse = {
+            warehouse_name,
+            address,
+            city,
+            country,
+            contact_name,
+            contact_position,
+            contact_phone,
+            contact_email,
+          };
+          await knex("warehouses").insert(newWarehouse);
+          res.status(201).json({
+            message: "Warehouse added successfully",
+            warehouse: newWarehouse,
+          });
+          // console.log(validData);
+          // next();
+        } catch (error) {
+          return res.status(400).send("Error adding warehouse");
+        }
+      }
+      return res.status(400).send({ errors: validData.array() });
     }
-  });
+  );
 
 router
   .route("/:id")
