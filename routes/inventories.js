@@ -5,14 +5,22 @@ const router = express.Router();
 const knex = initKnex(configuration);
 //check to see if all fields are filled
 const validateFields = async (req, res, next) => {
-  const { warehouse_id, item_name, description, category, status, quantity } =
-    req.body;
+  const {
+    warehouse_id,
+    item_name,
+    description,
+    category,
+    status,
+    quantity,
+    warehouse_name,
+  } = req.body;
   if (
     !warehouse_id ||
     !item_name ||
     !description ||
     !category ||
     !status ||
+    !warehouse_name ||
     quantity === undefined
   )
     if (isNaN(quantity)) {
@@ -46,6 +54,7 @@ router
     try {
       const {
         warehouse_id,
+        warehouse_name,
         item_name,
         description,
         category,
@@ -53,6 +62,7 @@ router
         quantity,
       } = req.body;
       const newItem = {
+        warehouse_name,
         warehouse_id,
         item_name,
         description,
@@ -84,20 +94,26 @@ router
   })
   .put(validateFields, async (req, res) => {
     const { id } = req.params;
-    const { warehouse_id, item_name, description, category, status, quantity } =
-      req.body;
+    const {
+      item_name,
+      description,
+      category,
+      status,
+      quantity,
+      warehouse_name,
+    } = req.body;
     try {
       const inventoryId = await knex("inventories").where({ id }).first();
       if (!inventoryId) {
         return res.status(404).json({ message: "Inventory ID not found." });
       }
       const updatedItem = {
-        warehouse_id,
         item_name,
         description,
         category,
         status,
         quantity: parseInt(quantity),
+        warehouse_name,
       };
       await knex("inventories").where({ id }).update(updatedItem);
       res.status(200).json({ id, ...updatedItem });
