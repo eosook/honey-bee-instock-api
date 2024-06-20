@@ -132,6 +132,19 @@ router.route("/:id/inventories").get(async (req, res) => {
       .where("warehouse_id", id);
     res.status(201).json(inventory).send("Got Warehouse Inventory!");
   } catch {
+    return res.status(404).send("Warehouse ID not found");
+  }
+});
+
+router.route("/:id/inventories").get(async (req, res) => {
+  const id = req.params.id;
+  try {
+    const inventory = await knex
+      .select("*")
+      .from("inventories")
+      .where("warehouse_id", id);
+    res.status(201).json(inventory).send("Got Warehouse Inventory!");
+  } catch {
     return res.status(500).send("Error getting Warehouse inventory");
   }
 });

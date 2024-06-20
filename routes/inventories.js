@@ -32,7 +32,7 @@ const validateFields = async (req, res, next) => {
 };
 router
   //get all item
-  .route("/inventory")
+  .route("/")
   .get(async (_req, res) => {
     try {
       const listInventories = await knex("inventories");
@@ -70,7 +70,7 @@ router
   });
 //get single item
 router
-  .route("/inventory/:id")
+  .route("/:id")
   .get(async (req, res) => {
     try {
       const data = await knex("inventories");
