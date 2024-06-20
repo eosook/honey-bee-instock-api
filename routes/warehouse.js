@@ -31,8 +31,8 @@ router
     .delete(async (req, res) => {
         const id = req.params.id
         try {
-            const warehouse = await knex.select('*').from('warehouses').where('id', id)
-            res.status(204).json(warehouse).send('delete succesfull')
+            await knex.select('*').from('warehouses').where('id', id).del()
+            res.send('delete succesfull')
         } catch {
             return res.status(404).send('Warehouse ID not found')
         }
