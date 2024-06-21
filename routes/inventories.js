@@ -32,7 +32,7 @@ const validateFields = async (req, res, next) => {
 };
 router
   //get all item
-  .route("/inventory")
+  .route("/")
   .get(async (_req, res) => {
     try {
       const listInventories = await knex("inventories");
@@ -70,7 +70,7 @@ router
   });
 //get single item
 router
-  .route("/inventory/:id")
+  .route("/:id")
   .get(async (req, res) => {
     try {
       const data = await knex("inventories");
@@ -80,6 +80,15 @@ router
       res.status(200).json(findInventories);
     } catch (error) {
       res.status(400).send(`error fetching inventory`);
+    }
+  })
+  .delete(async (req, res) => {
+    const id = req.params.id
+    try {
+        await knex.select('*').from('inventories').where('id', id).del()
+        res.send('delete succesfull')
+    } catch {
+        return res.status(404).send('item ID not found')
     }
   })
   .put(validateFields, async (req, res) => {
