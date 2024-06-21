@@ -5,27 +5,19 @@ const router = express.Router();
 const knex = initKnex(configuration);
 //check to see if all fields are filled
 const validateFields = async (req, res, next) => {
-  const {
-    warehouse_id,
-    item_name,
-    description,
-    category,
-    status,
-    quantity,
-    warehouse_name,
-  } = req.body;
+  const { warehouse_id, item_name, description, category, status, quantity } =
+    req.body;
   if (
     !warehouse_id ||
     !item_name ||
     !description ||
     !category ||
     !status ||
-    !warehouse_name ||
-    quantity === undefined
-  )
-    if (isNaN(quantity)) {
-      return res.status(400).json({ message: "Quantity must be a number." });
-    }
+    quantity === undefined ||
+    isNaN(quantity)
+  ) {
+    return res.status(400).json({ message: "Invalid input data." });
+  }
   try {
     const warehouseExists = await knex("warehouses")
       .where({ id: warehouse_id })
@@ -35,6 +27,7 @@ const validateFields = async (req, res, next) => {
     }
     next();
   } catch (error) {
+    console.error("Error validating warehouse_id:", error);
     res.status(500).json({ message: "Error validating warehouse_id." });
   }
 };
@@ -54,7 +47,6 @@ router
     try {
       const {
         warehouse_id,
-        warehouse_name,
         item_name,
         description,
         category,
@@ -62,7 +54,6 @@ router
         quantity,
       } = req.body;
       const newItem = {
-        warehouse_name,
         warehouse_id,
         item_name,
         description,
@@ -79,46 +70,36 @@ router
     }
   });
 //get single item
-router
-  .route("/:id")
-  .get(async (req, res) => {
-    try {
-      const data = await knex("inventories");
-      const findInventories = data.find((e) => {
-        return e.id === parseInt(req.params.id);
-      });
-      res.status(200).json(findInventories);
-    } catch (error) {
-      res.status(400).send(`error fetching inventory`);
+router.route("/:id").get(async (req, res) => {
+  try {
+    const data = await knex("inventories");
+    const findInventories = data.find((e) => {
+      return e.id === parseInt(req.params.id);
+    });
+    res.status(200).json(findInventories);
+  } catch (error) {
+    res.status(400).send(`error fetching inventory`);
+  }
+});
+router.route("/edit/:id").put(validateFields, async (req, res) => {
+  const { id } = req.params;
+  const { item_name, description, category, status, quantity } = req.body;
+  try {
+    const inventoryItem = await knex("inventories").where({ id }).first();
+    if (!inventoryItem) {
+      return res.status(404).json({ message: "Inventory ID not found." });
     }
-  })
-  .put(validateFields, async (req, res) => {
-    const { id } = req.params;
-    const {
+    const updatedItem = {
       item_name,
       description,
       category,
       status,
-      quantity,
-      warehouse_name,
-    } = req.body;
-    try {
-      const inventoryId = await knex("inventories").where({ id }).first();
-      if (!inventoryId) {
-        return res.status(404).json({ message: "Inventory ID not found." });
-      }
-      const updatedItem = {
-        item_name,
-        description,
-        category,
-        status,
-        quantity: parseInt(quantity),
-        warehouse_name,
-      };
-      await knex("inventories").where({ id }).update(updatedItem);
-      res.status(200).json({ id, ...updatedItem });
-    } catch (error) {
-      res.status(500).json({ message: "Error updating inventory item" });
-    }
-  });
+      quantity: parseInt(quantity),
+    };
+    await knex("inventories").where({ id }).update(updatedItem);
+    res.status(200).json({ id, ...updatedItem });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating inventory item" });
+  }
+});
 export default router;
