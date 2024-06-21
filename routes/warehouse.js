@@ -2,6 +2,7 @@ import express from "express";
 import initKnex from "knex";
 import configuration from "../knexfile.js";
 import { validationResult, checkSchema } from "express-validator";
+import e from "express";
 const router = express.Router();
 
 const knex = initKnex(configuration);
@@ -54,8 +55,13 @@ router
           matches: {
             options: /^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/,
           },
+          errorMessage: "Please enter a valid phone number",
         },
-        contact_email: { trim: true, isEmail: { bail: true } },
+        contact_email: {
+          trim: true,
+          isEmail: { bail: true },
+          errorMessage: "Please enter a valid email address",
+        },
       },
       ["body"]
     ),
@@ -91,7 +97,7 @@ router
           warehouse: newWarehouse,
         });
       } catch {
-        return res.status(400).send("Error adding warehouse");
+        return res.status(500).send("Error adding warehouse");
       }
     }
   );
@@ -160,13 +166,18 @@ router
           matches: {
             options: /^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/,
           },
+          errorMessage: "Please enter a valid phone number",
         },
-        contact_email: { trim: true, isEmail: { bail: true } },
+        contact_email: {
+          trim: true,
+          isEmail: { bail: true },
+          errorMessage: "Please enter a valid email address",
+        },
       },
       ["body"]
     ),
     async (req, res) => {
-      const id = req.params.id;
+      const idParam = req.params.id;
       const {
         warehouse_name,
         address,
@@ -177,18 +188,19 @@ router
         contact_phone,
         contact_email,
       } = req.body;
-      const result = validationResult(req);
-      if (!result.isEmpty()) {
-        return res.status(400).json({ errors: result.array() });
+      const editResult = validationResult(req);
+      if (!editResult.isEmpty()) {
+        return res.status(400).json({ errors: editResult.array() });
       }
       try {
-        const warehouse = await knex
+        const foundWarehouse = await knex
           .select("*")
           .from("warehouses")
-          .where("id", id);
-        if (!id) {
+          .where("id", idParam);
+        if (foundWarehouse.length < 1) {
           return res.status(404).send("Warehouse not found");
         }
+        const id = foundWarehouse[0].id;
         const editedWarehouse = {
           id,
           warehouse_name,
@@ -200,9 +212,17 @@ router
           contact_phone,
           contact_email,
         };
-        console.log(warehouse, editedWarehouse);
-        return res.send("found the warehouse!");
-      } catch {
+        await knex
+          .select("*")
+          .from("warehouses")
+          .where("id", idParam)
+          .update(editedWarehouse);
+        return res.status(200).json({
+          message: "Warehouse updated successfully",
+          warehouse: { ...editedWarehouse },
+        });
+      } catch (error) {
+        console.log(error);
         res.status(500).send("Error updating warehouse");
       }
     }
