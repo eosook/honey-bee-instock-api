@@ -13,11 +13,11 @@ const validateFields = async (req, res, next) => {
     !description ||
     !category ||
     !status ||
-    quantity === undefined
-  )
-    if (isNaN(quantity)) {
-      return res.status(400).json({ message: "Quantity must be a number." });
-    }
+    quantity === undefined ||
+    isNaN(quantity)
+  ) {
+    return res.status(400).json({ message: "Invalid input data." });
+  }
   try {
     const warehouseExists = await knex("warehouses")
       .where({ id: warehouse_id })
@@ -27,6 +27,7 @@ const validateFields = async (req, res, next) => {
     }
     next();
   } catch (error) {
+    console.error("Error validating warehouse_id:", error);
     res.status(500).json({ message: "Error validating warehouse_id." });
   }
 };
@@ -113,5 +114,5 @@ router
     } catch (error) {
       res.status(500).json({ message: "Error updating inventory item" });
     }
-  });
+});
 export default router;
