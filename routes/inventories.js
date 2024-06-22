@@ -81,6 +81,15 @@ router.route("/:id").get(async (req, res) => {
     res.status(400).send(`error fetching inventory`);
   }
 });
+  .delete(async (req, res) => {
+    const id = req.params.id
+    try {
+        await knex.select('*').from('inventories').where('id', id).del()
+        res.send('delete succesfull')
+    } catch {
+        return res.status(404).send('item ID not found')
+    }
+  })
 router.route("/edit/:id").put(validateFields, async (req, res) => {
   const { id } = req.params;
   const { item_name, description, category, status, quantity, warehouse_id } =
@@ -103,5 +112,6 @@ router.route("/edit/:id").put(validateFields, async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Error updating inventory item" });
   }
+
 });
 export default router;
