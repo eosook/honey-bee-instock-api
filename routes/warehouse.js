@@ -227,6 +227,16 @@ router
       }
     }
   );
-});
+
+  router.route('/:id/inventories')
+  .get(async (req, res) => {
+      const id = req.params.id
+      try {
+          const inventory = await knex.select('*').from('inventories').where('warehouse_id', id)
+          res.json(inventory)
+      } catch {
+          return res.status(500).send('Error getting Warehouse inventory')
+      }
+  })
 
 export default router;
