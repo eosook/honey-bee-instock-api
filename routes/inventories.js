@@ -83,13 +83,15 @@ router.route("/:id").get(async (req, res) => {
 });
 router.route("/edit/:id").put(validateFields, async (req, res) => {
   const { id } = req.params;
-  const { item_name, description, category, status, quantity } = req.body;
+  const { item_name, description, category, status, quantity, warehouse_id } =
+    req.body;
   try {
     const inventoryItem = await knex("inventories").where({ id }).first();
     if (!inventoryItem) {
       return res.status(404).json({ message: "Inventory ID not found." });
     }
     const updatedItem = {
+      warehouse_id,
       item_name,
       description,
       category,
