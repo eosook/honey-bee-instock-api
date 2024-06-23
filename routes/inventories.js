@@ -80,7 +80,7 @@ router.route("/:id").get(async (req, res) => {
   } catch (error) {
     res.status(400).send(`error fetching inventory`);
   }
-});
+})
   .delete(async (req, res) => {
     const id = req.params.id
     try {
