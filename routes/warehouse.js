@@ -122,10 +122,11 @@ router
       const warehouse = await knex
         .select("*")
         .from("warehouses")
-        .where("id", id);
-      res.status(204).json(warehouse).send("delete succesfull");
+        .where("id", id)
+        .del();
+      res.status(204).json(warehouse);
     } catch {
-      return res.status(404).send("Warehouse ID not found");
+      res.status(404).send("Warehouse ID not found");
     }
   })
   .put(
