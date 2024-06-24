@@ -4,7 +4,10 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "migrate": "knex migrate:latest",
+    "seed": "knex seed:run",
+    "dev": "node --watch main.js"
   },
   "keywords": [],
   "author": "",
@@ -15,7 +18,11 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "express-validator": "^7.1.0",
     "fs": "^0.0.1-security",
+    "knex": "^3.1.0",
+    "mysql2": "^3.10.1",
+    "node": "^22.3.0",
     "uuid": "^10.0.0"
   }
 }
